@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path'
 
 export default defineConfig({
+  base: '/ASPHALT/', // For GitHub Pages
   server: {
     port: 5173,
     host: 'localhost',

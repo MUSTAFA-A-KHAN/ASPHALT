@@ -2,4 +2,4 @@
  * UI Initialization Export
  */
 
-export { setupUI } from '@ui/main'
+export { setupUI } from '../main-ui'
