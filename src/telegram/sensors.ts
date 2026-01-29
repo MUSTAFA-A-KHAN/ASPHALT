@@ -123,10 +123,11 @@ class MotionSensorManager {
     const handleMotion = (event: DeviceMotionEvent) => {
       const rotation = event.rotationRate
       if (rotation) {
+        // Access properties safely - rotationRate may have alpha/beta/gamma or x/y/z depending on browser
         const data: GyroData = {
-          x: rotation.x ?? 0,
-          y: rotation.y ?? 0,
-          z: rotation.z ?? 0,
+          x: (rotation as any).x ?? (rotation as any).alpha ?? 0,
+          y: (rotation as any).y ?? (rotation as any).beta ?? 0,
+          z: (rotation as any).z ?? (rotation as any).gamma ?? 0,
         }
         this.gyroListeners.forEach((listener) => listener(data))
       }

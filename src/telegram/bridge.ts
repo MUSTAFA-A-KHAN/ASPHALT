@@ -3,7 +3,9 @@
  * Handles initialization, permission requests, and lifecycle management
  */
 
-import { TelegramWebApp, PermissionRequest, ThemeType } from '@types/telegram'
+// TelegramWebApp type defined inline to avoid import issues
+type TelegramWebApp = any
+type ThemeType = 'light' | 'dark'
 
 class TelegramBridge {
   private webapp: TelegramWebApp | null = null
@@ -47,18 +49,112 @@ class TelegramBridge {
           })
           resolve(webapp)
         } else {
-          setTimeout(checkWebApp, 100)
+          // Check if we're not in Telegram (development mode)
+          // Allow app to continue without Telegram WebApp
+          const isDevMode = !window.Telegram || !window.Telegram.WebApp
+          if (isDevMode) {
+            console.log('Running in development mode (not in Telegram)')
+            // Create a mock webapp for development
+            this.webapp = this.createMockWebApp()
+            this.initialized = true
+            resolve(this.webapp)
+          } else {
+            setTimeout(checkWebApp, 100)
+          }
         }
       }
 
       checkWebApp()
 
-      // Safety timeout
+      // Safety timeout - resolve with mock for development
       setTimeout(() => {
-        if (this.webapp) resolve(this.webapp)
-        else reject(new Error('Telegram WebApp not available after timeout'))
-      }, 5000)
+        if (this.webapp) {
+          resolve(this.webapp)
+        } else {
+          console.log('Creating mock Telegram WebApp for development')
+          this.webapp = this.createMockWebApp()
+          this.initialized = true
+          resolve(this.webapp)
+        }
+      }, 3000) // Shorter timeout for development
     })
+  }
+
+  /**
+   * Create a mock WebApp for development/testing
+   */
+  private createMockWebApp(): TelegramWebApp {
+    return {
+      initData: '',
+      initDataUnsafe: { auth_date: 0, hash: '' },
+      version: '6.0',
+      platform: 'unknown',
+      headerColor: '#000',
+      bottomBarColor: '#000',
+      backgroundColor: '#000',
+      textColor: '#fff',
+      hintColor: '#888',
+      linkColor: '#007bff',
+      buttonColor: '#ff6b35',
+      buttonTextColor: '#fff',
+      secondaryBgColor: '#1a1f3a',
+      headerBgColor: '#000',
+      accentTextColor: '#ff6b35',
+      sectionBgColor: '#1a1f3a',
+      sectionHeaderTextColor: '#fff',
+      subtitleTextColor: '#888',
+      destructiveTextColor: '#ff4444',
+      themeParams: {},
+      isExpanded: true,
+      viewportHeight: window.innerHeight,
+      viewportStableHeight: window.innerHeight,
+      isClosingConfirmationEnabled: false,
+      safeAreaInset: { top: 0, bottom: 0, left: 0, right: 0 },
+      contentSafeAreaInset: { top: 0, bottom: 0, left: 0, right: 0 },
+      isVerticalSwipesEnabled: true,
+      isClosingConfirmationNeeded: false,
+      ready: () => {},
+      expand: () => {},
+      close: () => {},
+      onEvent: () => {},
+      offEvent: () => {},
+      sendEvent: () => {},
+      HapticFeedback: {
+        impactOccurred: () => {},
+        notificationOccurred: () => {},
+        selectionChanged: () => {},
+      },
+      showPopup: () => {},
+      showAlert: (msg: string, cb?: () => void) => { 
+        console.log('Alert:', msg)
+        cb?.() 
+      },
+      showConfirm: (msg: string, cb?: (ok: boolean) => void) => { 
+        console.log('Confirm:', msg)
+        cb?.(true) 
+      },
+      CloudStorage: {
+        getItem: (key: string, cb?: (error: any, value: string | null) => void) => cb?.(null, null),
+        setItem: (key: string, value: string, cb?: (error: any) => void) => cb?.(null),
+        removeItem: (key: string, cb?: (error: any) => void) => cb?.(null),
+        getKeys: (cb?: (error: any, keys: string[]) => void) => cb?.(null, []),
+        removeItems: (keys: string[], cb?: (error: any) => void) => cb?.(null),
+      },
+      requestPermission: (access_requested: string, cb?: (permission_granted: boolean) => void) => {
+        console.log('Mock permission request:', access_requested)
+        // Always grant in mock mode
+        cb?.(true)
+      },
+      requestContactPermission: (cb?: (permission_granted: boolean) => void) => cb?.(true),
+      lockOrientation: () => {},
+      unlockOrientation: () => {},
+      onViewportChanged: () => {},
+      onThemeChanged: () => {},
+      onHomeScreenShown: () => {},
+      onWriteAccessRequested: () => {},
+      onContactRequested: () => {},
+      onClipboardTextReceived: () => {},
+    }
   }
 
   /**

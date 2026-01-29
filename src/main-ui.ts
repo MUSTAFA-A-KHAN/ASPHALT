@@ -88,6 +88,7 @@ export function setupUI() {
 
       <!-- Race Screen -->
       <div id="screen-race" class="screen">
+        <canvas id="race-canvas"></canvas>
         <div class="hud">
           <div class="hud-left">
             <div class="speed-display">
@@ -105,7 +106,6 @@ export function setupUI() {
             </div>
           </div>
         </div>
-        <canvas id="race-canvas"></canvas>
       </div>
 
       <!-- Results Screen -->
@@ -183,6 +183,8 @@ function setupEventListeners() {
   btnPlay?.addEventListener('click', async () => {
     appStateManager.setState({ screen: 'race' })
     await uiScreenManager.showScreen('race')
+    // Initialize the race canvas when entering race screen
+    initializeRaceCanvas()
   })
 
   // Permissions
@@ -196,6 +198,69 @@ function setupEventListeners() {
     await uiScreenManager.showScreen('calibration')
   })
 }
+
+/**
+ * Initialize and render on the race canvas
+ */
+function initializeRaceCanvas() {
+  const canvas = document.getElementById('race-canvas') as HTMLCanvasElement
+  if (!canvas) return
+
+  // Get the screen element to size canvas properly
+  const screenRace = document.getElementById('screen-race')
+  if (!screenRace) return
+
+  const width = screenRace.clientWidth
+  const height = screenRace.clientHeight
+
+  canvas.width = width
+  canvas.height = height
+
+  // Render a test pattern to verify canvas works
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  // Clear canvas
+  ctx.fillStyle = '#0a0e27'
+  ctx.fillRect(0, 0, width, height)
+
+  // Draw a grid pattern to verify rendering
+  ctx.strokeStyle = '#1a1f3a'
+  ctx.lineWidth = 1
+
+  // Draw vertical lines
+  for (let x = 0; x < width; x += 50) {
+    ctx.beginPath()
+    ctx.moveTo(x, 0)
+    ctx.lineTo(x, height)
+    ctx.stroke()
+  }
+
+  // Draw horizontal lines
+  for (let y = 0; y < height; y += 50) {
+    ctx.beginPath()
+    ctx.moveTo(0, y)
+    ctx.lineTo(width, y)
+    ctx.stroke()
+  }
+
+  // Draw center indicator
+  ctx.fillStyle = '#ff6b35'
+  ctx.beginPath()
+  ctx.arc(width / 2, height / 2, 10, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Add text
+  ctx.fillStyle = '#ffffff'
+  ctx.font = '20px -apple-system, BlinkMacSystemFont, sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('Race Canvas Ready', width / 2, height / 2 + 40)
+
+  console.log('Race canvas initialized:', { width, height })
+}
+
+// Call this function when showing the race screen
+// Add this to setupEventListeners for the play button
 
 function addStyles() {
   const style = document.createElement('style')
@@ -352,8 +417,14 @@ function addStyles() {
     }
 
     #race-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #1a1f3a 0%, #0a0e27 100%);
     }
 
     .calibration-demo {

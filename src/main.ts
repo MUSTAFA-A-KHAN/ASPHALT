@@ -7,7 +7,8 @@ import { motionSensorManager } from '@telegram/sensors'
 import { gyroInputHandler } from '@telegram/input'
 import { appStateManager } from '@core/state'
 import { uiScreenManager } from '@ui/screens'
-import { setupUI } from './ui-init'
+import { setupUI } from './main-ui'
+
 
 async function main() {
   try {
